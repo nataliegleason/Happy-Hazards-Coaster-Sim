@@ -25,6 +25,16 @@ Normal paragraph text.
 
 Full loop is 113 s nominal.
 
+## Block Occupancy Parameteres
+| Block | Becomes occupied on |	Clears on |
+|---|---|---|
+| B1 | S1_E | S2_E |
+| B2 | S2_E | S3_E |
+| B3 | S3_E | S4_E |
+| B4 | S4_E | S1_E |
+
+This design was chosen because if we chose to clear a block occupancy upon tripping the block exit sensor and not the entry sensor of the next block, then there might be a state that exists where a train has tripped an exit sensor of a block but never an extry sensor of the next block. This means that the train belongs to no blocks, and this breaks our system.
+
 ## Sensors
 | Sensor ID | Block | Location | Nominal (s) | Min (s) | Max (s) |
 |---|---|---|---|---|---|
@@ -37,6 +47,7 @@ Full loop is 113 s nominal.
 | S3_X | B3 | Mid run brake run | 11 | 12 | 23 |
 | S4_E | B4 | After mid run brake run | 1 | 2 | 5 |
 | S4_X | B4 | Final brake run | 13 | 15 | 30 |
+
 
 - Scan cycle: 50 ms
 - Sensor latency: 20 ms

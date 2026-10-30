@@ -31,8 +31,54 @@ class Outputs:
 @dataclass
 class State: #not frozen, changes every cycle
     time_s: float = 0.0
-    # occupancy, timers, fault flags get added here later
+    occupied_b1: bool = False
+    occupied_b2: bool = False
+    occupied_b3: bool = False
+    occupied_b4: bool = False
+    prev_inputs: Inputs = field(default_factory=Inputs)
+    # , timers, fault flags get added here later
+
+def rising(prev: bool, now: bool) -> bool:
+    return now and not prev
 
 def scan(inputs: Inputs, state: State) -> tuple[Outputs, State]: #recieves inputs
     """One controller cycle. Defaults to the safe state."""
-    return Outputs(), state
+    prev = state.prev_inputs
+
+    #rising edge detection: if the previous value was False and the current value is True, then a rising edge has occurred.
+    if rising(prev.s2_e, inputs.s2_e):
+        state.occupied_b2 = True      # train entered B2
+
+    if rising(prev.s3_e, inputs.s3_e):
+        state.occupied_b2 = False     # train reached B3, so B2 is clear
+
+    if rising(prev.s3_e, inputs.s3_e):
+        state.occupied_b3 = True      # train entered B3
+
+    if rising(prev.s4_e, inputs.s4_e):
+        state.occupied_b3 = False     # train reached B4, so B3 is clear
+
+    if rising(prev.s4_e, inputs.s4_e):
+        state.occupied_b4 = True      # train entered B4
+
+    if rising(prev.s1_e, inputs.s1_e):
+        state.occupied_b4 = False      # train reached B1, so B4 is clear
+
+    if rising(prev.s1_e, inputs.s1_e):
+        state.occupied_b1 = True      # train entered B1
+
+    if rising(prev.s2_e, inputs.s2_e):
+        state.occupied_b1 = False      # train reached B2, so B1 is clear
+
+    permissive = ( #when can train leave the station? when all of these are true:
+        inputs.estop_ok #estop circuit healthy
+        and inputs.restraints_verified #restraints confirmed
+        and inputs.dispatch_request #dispatch requested
+        and not state.occupied_b2 #b2 not occupied
+    )
+
+    state.prev_inputs = inputs #save for next scan edge detection
+
+    state.time_s += 0.05 #time increases with each scan by 50ms
+
+    return Outputs(dispatch_permissive=permissive), state
