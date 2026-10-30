@@ -9,6 +9,11 @@ Normal paragraph text.
 |---|---|
 | cell | cell |
 
+### Assumptions
+- The 1-5 s handoff gap between a block’s exit sensor and the next block’s entry sensor
+- Stall timeouts only start counting once the next block is clear, so legitimate brake-run holds don’t cause false faults.
+- Fault threshold is 1.5 × max for each interval
+
 
 ## Block Sections
 | Block ID | Name | Nominal (s) | Min (s) | Max (s) |
@@ -18,9 +23,11 @@ Normal paragraph text.
 | B3 | Drop, inversion, mid-course brake | 20 | 17 | 35 |
 | B4 | Inversion, final brake | 15 | 13 | 30 |
 
+Full loop is 113 s nominal.
+
 ## Sensors
 | Sensor ID | Block | Location | Nominal (s) | Min (s) | Max (s) |
-|---|---|---|---|---|
+|---|---|---|---|---|---|
 | S1_E | B1 | After final brake run | 1 | 2 | 5 |
 | S1_X | B1 | Station exit | 35 | 45 | 90 |
 | S2_E | B2 | Chain Lift start | 1 | 2 | 5 |
@@ -36,14 +43,12 @@ Normal paragraph text.
 - Brake actuation delay: 300 ms
 - Brake stopping time: 4 s
 
-## Section heading
-
 ## Hazard table
 | ID | Hazard | Cause | Mitigation | Verifying test |
 |---|---|---|---|---|
 | H1 | Train collision | Train released into an occupied block | Block-clear interlock | (to be added) |
-| H2 | Unsafe dispatch | Restraints unverified, B2 active, or E-stop active | Timeout occurs at 1.5*t_ max which flags a fault and holds previous trains| (to be added) |
-| H3| Stalled Train/Rollback | Train stops unexpectedly mid-brake run; rollback possible in B3 | Mid block B3 sensor at valley crest (t_crest) | (to be added) |
+| H2 | Unsafe dispatch | Restraints unverified, B2 occupied, or E-stop active | dispatch permissive (restraints verified, E-stop clear, B2 not occupied) | (to be added) |
+| H3| Stalled Train/Rollback | Train stops unexpectedly mid-brake run; rollback possible in B3 | the S3_M timeout flags a fault, the lift stops, dispatch is inhibited, and recovery is manual | (to be added) |
 | H4 | Sensor failure or Inaccuracy | Hardware Issues | Plausability checks against t_min and t_max; Entry and exit sequence checks | (to be added) |
 | H5 | Inconsistent state after fault | Controller restarts, has no indivcation of where trains are | Manual reset and visual clear track verification | (to be added) |
 
